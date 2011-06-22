@@ -15,7 +15,6 @@ Capistrano::Configuration.instance(:must_exist).load do
   # =========================================================================
 
   set :application,   ""
-  set :branch,        "master"
   set :deploy_to,     ""
   set :keep_releases, 5
   set :repository,    ""
@@ -36,7 +35,7 @@ Capistrano::Configuration.instance(:must_exist).load do
   set :git_flag_quiet,        ""
 
   _cset(:cake_branch)         { "" }
-  _cset(:cake_repo)           { "https://github.com/cakephp/cakephp.git" }
+  _cset(:cake_repo)           { "git://github.com/cakephp/cakephp.git" }
   _cset :tmp_children,        %w(cache logs sessions tests)
   _cset :cache_children,      %w(models persistent views)
   _cset :logs_files,          %w(debug error)
@@ -50,6 +49,8 @@ Capistrano::Configuration.instance(:must_exist).load do
     _cset(:tmp_path)          { File.join(shared_path, "tmp") }
     _cset(:cache_path)        { File.join(tmp_path, "cache") }
     _cset(:logs_path)         { File.join(tmp_path, "logs") }
+
+  
 
     after("deploy:setup", "cake:database:config") if (!remote_file_exists?(database_path))
     after("deploy:symlink", "cake:database:symlink") if (remote_file_exists?(database_path))
@@ -443,6 +444,7 @@ Capistrano::Configuration.instance(:must_exist).load do
     task :update do
       set :cake_branch, ENV['BRANCH'] if ENV.has_key?('BRANCH')
       stream "cd #{cake_path}/cakephp && git checkout #{git_flag_quiet}#{cake_branch}"
+      stream "cd #{cake_path}/cakephp && git pull"
     end
 
     namespace :cache do

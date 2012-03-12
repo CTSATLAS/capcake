@@ -468,7 +468,10 @@ Capistrano::Configuration.instance(:must_exist).load do
       DESC
       task :config, :roles => :web, :except => { :no_release => true } do
         require 'erb'
-        on_rollback { run "rm #{database_path}" }
+        on_rollback do 
+          run "rm #{database_path}" 
+          run "rm #{shared_path}/config/database.yml"
+        end  
         puts "Database configuration"
         _cset :db_driver, defaults(Capistrano::CLI.ui.ask("driver [mysql]:"), 'mysql')
         _cset :db_host, defaults(Capistrano::CLI.ui.ask("hostname [localhost]:"), 'localhost')
@@ -483,6 +486,12 @@ Capistrano::Configuration.instance(:must_exist).load do
         result = ERB.new(template).result(binding)
 
         put(result, "#{database_path}", :mode => 0644, :via => :scp)
+
+        template = File.read(File.join(File.dirname(__FILE__), "templates", "database.ryml"))
+        result = ERB.new(template).result(binding)
+
+        put(result, "#{shared_path}/config/database.yml", :mode => 0644, :via => :scp)
+
         after("deploy:symlink", "cake:database:symlink")
       end
       desc <<-DESC

@@ -112,7 +112,6 @@ Capistrano::Configuration.instance(:must_exist).load do
       transaction do
         update_code
         symlink
-        finalize_update
       end
     end
 
@@ -131,6 +130,8 @@ Capistrano::Configuration.instance(:must_exist).load do
     task :update_code, :except => { :no_release => true } do
       on_rollback { run "rm -rf #{release_path}; true" }
       strategy.deploy!
+      finalize_update
+      end
     end
 
     desc <<-DESC

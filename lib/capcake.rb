@@ -130,7 +130,6 @@ Capistrano::Configuration.instance(:must_exist).load do
     task :update_code, :except => { :no_release => true } do
       on_rollback { run "rm -rf #{release_path}; true" }
       strategy.deploy!
-      finalize_update
       end
     end
 
@@ -158,7 +157,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       by putting each new release of your application in its own directory. When \
       you deploy a new version, this task's job is to update the `current', \
       `current/tmp', `current/webroot/system' symlinks to point at the new version. \
-      
+
       You will rarely need to call this task directly; instead, use the `deploy' \
       task (which performs a complete deploy, including `restart') or the 'update' \
       task (which does everything except `restart').
@@ -173,7 +172,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       end
       run "ln -s #{shared_path}/system #{latest_release}/webroot/system && ln -s #{shared_path}/tmp #{latest_release}/tmp";
       run "rm -f #{current_path} && ln -s #{latest_release} #{current_path}"
-      cake.database.symlink if (remote_file_exists?(database_path)) 
+      cake.database.symlink if (remote_file_exists?(database_path))
     end
 
     desc <<-DESC
@@ -469,10 +468,10 @@ Capistrano::Configuration.instance(:must_exist).load do
       DESC
       task :config, :roles => :web, :except => { :no_release => true } do
         require 'erb'
-        on_rollback do 
-          run "rm #{database_path}" 
+        on_rollback do
+          run "rm #{database_path}"
           run "rm #{shared_path}/config/database.yml"
-        end  
+        end
         puts "Database configuration"
         _cset :db_driver, defaults(Capistrano::CLI.ui.ask("driver [mysql]:"), 'mysql')
         _cset :db_host, defaults(Capistrano::CLI.ui.ask("hostname [localhost]:"), 'localhost')
@@ -512,7 +511,7 @@ Capistrano::Configuration.instance(:must_exist).load do
         _cset :db_name, defaults(Capistrano::CLI.ui.ask("db name [#{application}]:"), application)
         _cset :db_encoding, defaults(Capistrano::CLI.ui.ask("encoding [utf8]:"), 'utf8')
 
-        set :tmp_filename, File.join(shared_path, "config/create_db_#{db_name}.sql") 
+        set :tmp_filename, File.join(shared_path, "config/create_db_#{db_name}.sql")
 
         template = File.read(File.join(File.dirname(__FILE__), "templates", "create_database.rsql"))
         result = ERB.new(template).result(binding)

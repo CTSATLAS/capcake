@@ -130,7 +130,6 @@ Capistrano::Configuration.instance(:must_exist).load do
     task :update_code, :except => { :no_release => true } do
       on_rollback { run "rm -rf #{release_path}; true" }
       strategy.deploy!
-      end
     end
 
     desc <<-DESC
